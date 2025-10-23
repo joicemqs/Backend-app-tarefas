@@ -6,5 +6,5 @@ router = DefaultRouter()
 router.register(r'tasks', TaskViewSet, basename='task')
 
 urlpatterns = [
-    path('addtarefa', include(router.urls)),
+    path('', include(router.urls)),
 ]
