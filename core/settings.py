@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'apps.accounts',
+    'apps.tasks',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -132,3 +133,5 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
