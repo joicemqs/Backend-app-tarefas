@@ -7,6 +7,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from rest_framework import serializers
 from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_decode
 
 User = get_user_model()
 
@@ -55,3 +56,26 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             from_email=None,
             recipient_list=[user.email],
         )
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+
+    def validate(self, data):
+        try:
+            uid = urlsafe_base64_decode(data['uid']).decode()
+            user = User.objects.get(pk=uid)
+        except Exception:
+            raise serializers.ValidationError("UID inválido.")
+
+        if not default_token_generator.check_token(user, data['token']):
+            raise serializers.ValidationError("Token inválido ou expirado.")
+
+        data['user'] = user
+        return data
+
+    def save(self):
+        user = self.validated_data['user']
+        user.set_password(self.validated_data['new_password'])
+        user.save()
