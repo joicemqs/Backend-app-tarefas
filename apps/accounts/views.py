@@ -7,6 +7,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+from rest_framework.generics import GenericAPIView
+
+
 
 User = get_user_model()
 
@@ -22,17 +25,21 @@ class UserListView(generics.ListAPIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     
-class PasswordResetRequestView(APIView):
+class PasswordResetRequestView(GenericAPIView):
+    serializer_class = PasswordResetRequestSerializer
+
     def post(self, request):
-        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"detail": "Email enviado com instruções."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PasswordResetConfirmView(APIView):
+class PasswordResetConfirmView(GenericAPIView):
+    serializer_class = PasswordResetConfirmSerializer
+
     def post(self, request):
-        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"detail": "Senha redefinida com sucesso."}, status=status.HTTP_200_OK)
