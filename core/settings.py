@@ -135,3 +135,6 @@ REST_FRAMEWORK = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+TIME_ZONE = 'America/Sao_Paulo'
+USE_TZ = True
