@@ -1,1 +1,4 @@
 .venv/
+core/__pycache__/
+apps/tasks/__pycache__/
+apps/accounts/__pycache__/
