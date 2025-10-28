@@ -8,6 +8,7 @@ from django.utils.encoding import force_bytes
 from rest_framework import serializers
 from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_decode
+from django.conf import settings
 
 User = get_user_model()
 
@@ -48,12 +49,12 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        reset_link = f"https://seuapp.com/reset-password?uid={uid}&token={token}"
+        reset_link = f"https://todo-app.com/reset-password?uid={uid}&token={token}"
 
         send_mail(
-            subject="Recuperação de senha",
+            subject="Recuperação de senha Todo-app",
             message=f"Use este link para redefinir sua senha: {reset_link}",
-            from_email=None,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
         )
 
