@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'apps.accounts',
     'apps.tasks',
+    'drf_spectacular',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -134,6 +135,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' #Envia o email para o console
@@ -141,3 +146,17 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 TIME_ZONE = config('TIME_ZONE', default='UTC')
 USE_TZ = True
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API Todo-app',
+    'DESCRIPTION': 'Documentação da API de aplicativo de tarefas',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'AUTHENTICATIONS': [
+        {
+            'name': 'JWT',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        },
+    ],
+}
