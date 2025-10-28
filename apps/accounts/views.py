@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema, OpenApiExample
 
 User = get_user_model()
@@ -71,7 +71,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 )
 class PasswordResetRequestView(GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -94,7 +94,7 @@ class PasswordResetRequestView(GenericAPIView):
 
 class PasswordResetConfirmView(GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
