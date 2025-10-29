@@ -2,6 +2,8 @@
 
 Essa é uma aplicação construída para ser utilizada no backend do aplicativo de tarefas, nela foi utilizada o Django Rest Framework para desenvolvimento e drf spectacular para documentação.
 
+![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+
 ## Pré-requisitos
 Antes de instalar e executar a aplicação, certifique-se de ter os seguintes requisitos atendidos:
 
@@ -70,7 +72,7 @@ Siga os passos abaixo para configurar e executar o projeto localmente:
 
 ### 1. Clonar o repositório
 ```
-git clone https://github.com/seu-usuario/seu-projeto.git
+git clone https://github.com/joicemqs/Backend-app-tarefas
 
 cd seu-projeto
 ```
@@ -95,10 +97,14 @@ SECRET_KEY=seu-segredo
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
+Adicione ao ALLOWED_HOSTS o IP do computador utilizado para rodar o servidor do Django
 
 ### 5. Aplicar migrações
 ````
-python manage.py makemigrations
+python manage.py makemigrations accounts
+python manage.py migrate
+
+python manage.py makemigrations tasks
 python manage.py migrate
 ````
 
@@ -125,3 +131,17 @@ Redoc: http://127.0.0.1:8000/api/redoc/
 
 Schema JSON: http://127.0.0.1:8000/api/schema/
 
+### 9. Executar suíte de testes
+
+Para executar os testes automáticos execute os comandos abaixo no raiz do projeto
+
+````
+python manage.py test apps/accounts/tests
+
+python manage.py test apps/tasks/tests
+
+````
+
+## Licença
+
+[MIT](https://choosealicense.com/licenses/mit/)
