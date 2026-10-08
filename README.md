@@ -61,9 +61,13 @@ djangorestframework-simplejwt – autenticação via JWT
 
 drf-spectacular – documentação automática da API
 
+django-cors-headers – permite que o app rodando no navegador (Expo Web) acesse a API
+
+python-decouple – leitura das variáveis de ambiente do arquivo .env
+
 SQLite (padrão do Django, já incluído)
 
-Instalação listada na sessão seguinte
+Todas as dependências, com as versões utilizadas, estão listadas no arquivo `requirements.txt`. A instalação está descrita na seção seguinte.
 
 
 ## Instalação e execução da API
@@ -74,7 +78,7 @@ Siga os passos abaixo para configurar e executar o projeto localmente:
 ```
 git clone https://github.com/joicemqs/Backend-app-tarefas
 
-cd seu-projeto
+cd Backend-app-tarefas
 ```
 ### 2. Criar e ativar ambiente virtual
 ```
@@ -85,8 +89,10 @@ venv\Scripts\activate     # Windows
 
 ### 3. Instalar dependências
 
+Com o ambiente virtual ativado, instale todas as dependências de uma vez pelo arquivo `requirements.txt`:
+
 ```
-pip install django djangorestframework djangorestframework-simplejwt drf-spectacular
+pip install -r requirements.txt
 ```
 
 ### 4. Configurar variáveis de ambiente
@@ -96,15 +102,16 @@ Crie um arquivo .env com suas configurações locais, com base no arquivo env.ex
 SECRET_KEY=seu-segredo
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+DEFAULT_FROM_EMAIL=emaildeenvio@gmail.com
+TIME_ZONE=America/Sao_Paulo
+CORS_ALLOWED_ORIGINS=http://localhost:8081
 ```
-Adicione ao ALLOWED_HOSTS o IP do computador utilizado para rodar o servidor do Django
+Adicione ao ALLOWED_HOSTS o IP do computador utilizado para rodar o servidor do Django.
+
+O CORS_ALLOWED_ORIGINS só é necessário para usar o app pelo navegador (Expo Web).
 
 ### 5. Aplicar migrações
 ````
-python manage.py makemigrations accounts
-python manage.py migrate
-
-python manage.py makemigrations tasks
 python manage.py migrate
 ````
 
@@ -136,10 +143,7 @@ Schema JSON: http://127.0.0.1:8000/api/schema/
 Para executar os testes automáticos execute os comandos abaixo no raiz do projeto
 
 ````
-python manage.py test apps/accounts/tests
-
-python manage.py test apps/tasks/tests
-
+python manage.py test
 ````
 
 ## Licença

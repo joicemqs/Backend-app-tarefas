@@ -1,7 +1,13 @@
+# Python
 .venv/
-core/__pycache__/
-apps/tasks/__pycache__/
-apps/accounts/__pycache__/
+__pycache__/
+*.pyc
+
+# Ambiente e banco local
 .env
-node_modules/
 db.sqlite3
+
+# Outros
+node_modules/
+.expo/
+.DS_Store
