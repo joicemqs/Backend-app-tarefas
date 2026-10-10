@@ -1,14 +1,13 @@
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from rest_framework import serializers
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_decode
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -23,6 +22,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'username', 'password']
+
+    def validate_password(self, value):
+        # aplica os validadores do AUTH_PASSWORD_VALIDATORS (tamanho mínimo, senha comum, só números...)
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
@@ -39,13 +43,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
-    def validate_email(self, value):
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Usuário com esse email não existe.")
-        return value
-
     def save(self):
-        user = User.objects.get(email=self.validated_data['email'])
+        # Não informamos se o e-mail existe ou não, para não revelar quais e-mails estão cadastrados
+        user = User.objects.filter(email=self.validated_data['email']).first()
+        if user is None:
+            return
+
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
@@ -61,7 +64,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
-    new_password = serializers.CharField(min_length=8)
+    new_password = serializers.CharField(write_only=True)
 
     def validate(self, data):
         try:
@@ -72,6 +75,11 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         if not default_token_generator.check_token(user, data['token']):
             raise serializers.ValidationError("Token inválido ou expirado.")
+
+        try:
+            validate_password(data['new_password'], user)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({'new_password': list(e.messages)})
 
         data['user'] = user
         return data

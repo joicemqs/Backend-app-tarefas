@@ -53,3 +53,15 @@ class TaskInvalidAPITestCase(APITestCase):
     def test_delete_nonexistent_task(self):
         response = self.client.delete('/api/tasks/9999/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_cannot_access_other_users_task(self):
+        other_user = User.objects.create_user(username='outra', email='outra@example.com', password='123456')
+        other_task = Task.objects.create(owner=other_user, title='Tarefa da outra usuária')
+
+        self.assertEqual(self.client.get(f'/api/tasks/{other_task.id}/').status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.client.patch(f'/api/tasks/{other_task.id}/', {'title': 'invadida'}).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.client.delete(f'/api/tasks/{other_task.id}/').status_code, status.HTTP_404_NOT_FOUND)
+        self.assertNotIn(other_task.id, [t['id'] for t in self.client.get('/api/tasks/').data])
+
+        other_task.refresh_from_db()
+        self.assertEqual(other_task.title, 'Tarefa da outra usuária')

@@ -2,6 +2,9 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 User = get_user_model()
 
@@ -39,6 +42,25 @@ class AccountsInvalidAPITestCase(APITestCase):
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('email', response.data)
+
+    def test_register_weak_password(self):
+        for weak_password in ['123', '12345678', 'password']:
+            response = self.client.post(self.register_url, {
+                'username': 'fraca',
+                'email': 'fraca@example.com',
+                'password': weak_password
+            })
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, weak_password)
+            self.assertIn('password', response.data)
+
+    def test_password_reset_confirm_weak_password(self):
+        response = self.client.post(self.password_reset_confirm_url, {
+            'uid': urlsafe_base64_encode(force_bytes(self.user.pk)),
+            'token': default_token_generator.make_token(self.user),
+            'new_password': '123'
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('new_password', response.data)
 
     def test_login_wrong_password(self):
         response = self.client.post(self.login_url, {
