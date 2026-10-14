@@ -6,11 +6,13 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_completed = models.BooleanField(default=False)
+    # ordem definida pela pessoa ao arrastar as tarefas (menor = mais acima)
+    position = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['position', '-created_at']
 
     def __str__(self):
         return f"{self.title} ({self.owner})"
