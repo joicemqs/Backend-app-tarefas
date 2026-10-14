@@ -64,3 +64,28 @@ class TaskAPITestCase(APITestCase):
         response = self.client.delete(f'/api/tasks/{self.task.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Task.objects.filter(id=self.task.id).exists())
+
+    def test_create_task_with_due_date(self):
+        response = self.client.post('/api/tasks/', {'title': 'Com prazo', 'due_date': '2026-10-20'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['due_date'], '2026-10-20')
+
+    def test_create_task_without_due_date(self):
+        response = self.client.post('/api/tasks/', {'title': 'Sem prazo'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(response.data['due_date'])
+
+    def test_update_task_due_date(self):
+        response = self.client.patch(f'/api/tasks/{self.task.id}/', {'due_date': '2026-10-25'}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['due_date'], '2026-10-25')
+
+    def test_create_task_with_invalid_due_date(self):
+        response = self.client.post('/api/tasks/', {'title': 'Data inválida', 'due_date': '2026-13-01'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('due_date', response.data)
+
+    def test_create_task_with_null_due_date(self):
+        response = self.client.post('/api/tasks/', {'title': 'Sem prazo', 'due_date': None}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(response.data['due_date'])

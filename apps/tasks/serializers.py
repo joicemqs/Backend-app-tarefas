@@ -6,7 +6,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'owner', 'title', 'description', 'is_completed', 'position', 'created_at', 'updated_at']
+        fields = ['id', 'owner', 'title', 'description', 'is_completed', 'position', 'created_at', 'updated_at', 'due_date']
         # a posição só muda pelo endpoint /reorder/
         read_only_fields = ['id', 'owner', 'position', 'created_at', 'updated_at']
 
