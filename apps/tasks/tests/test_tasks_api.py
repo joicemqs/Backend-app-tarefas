@@ -2,6 +2,7 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from django.utils.dateparse import parse_datetime
 from apps.tasks.models import Task
 
 User = get_user_model()
@@ -66,9 +67,16 @@ class TaskAPITestCase(APITestCase):
         self.assertFalse(Task.objects.filter(id=self.task.id).exists())
 
     def test_create_task_with_due_date(self):
-        response = self.client.post('/api/tasks/', {'title': 'Com prazo', 'due_date': '2026-10-20'})
+        response = self.client.post('/api/tasks/', {'title': 'Com prazo', 'due_date': '2026-10-20T14:30:00-03:00'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['due_date'], '2026-10-20')
+        # compara como datetime: a API pode devolver o mesmo instante em outro fuso
+        self.assertEqual(parse_datetime(response.data['due_date']), parse_datetime('2026-10-20T14:30:00-03:00'))
+
+    def test_create_task_with_utc_due_date(self):
+        # o app envia em UTC (Date.toISOString(), com "Z"); 17:30 UTC = 14:30 em Brasília
+        response = self.client.post('/api/tasks/', {'title': 'Com prazo', 'due_date': '2026-10-20T17:30:00.000Z'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(parse_datetime(response.data['due_date']), parse_datetime('2026-10-20T14:30:00-03:00'))
 
     def test_create_task_without_due_date(self):
         response = self.client.post('/api/tasks/', {'title': 'Sem prazo'})
@@ -76,14 +84,25 @@ class TaskAPITestCase(APITestCase):
         self.assertIsNone(response.data['due_date'])
 
     def test_update_task_due_date(self):
-        response = self.client.patch(f'/api/tasks/{self.task.id}/', {'due_date': '2026-10-25'}, format="json")
+        response = self.client.patch(f'/api/tasks/{self.task.id}/', {'due_date': '2026-10-25T09:00:00-03:00'}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['due_date'], '2026-10-25')
+        self.assertEqual(parse_datetime(response.data['due_date']), parse_datetime('2026-10-25T09:00:00-03:00'))
+
+    def test_remove_task_due_date(self):
+        task = Task.objects.create(owner=self.user, title='Com prazo', due_date=parse_datetime('2026-10-20T14:30:00-03:00'))
+
+        response = self.client.patch(f'/api/tasks/{task.id}/', {'due_date': None}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['due_date'])
+        task.refresh_from_db()
+        self.assertIsNone(task.due_date)
 
     def test_create_task_with_invalid_due_date(self):
-        response = self.client.post('/api/tasks/', {'title': 'Data inválida', 'due_date': '2026-13-01'})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('due_date', response.data)
+        for invalid in ['2026-13-01T10:00:00', '20/10/2026 14:30', 'amanhã']:
+            response = self.client.post('/api/tasks/', {'title': 'Data inválida', 'due_date': invalid})
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, invalid)
+            self.assertIn('due_date', response.data)
 
     def test_create_task_with_null_due_date(self):
         response = self.client.post('/api/tasks/', {'title': 'Sem prazo', 'due_date': None}, format="json")

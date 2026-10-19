@@ -8,7 +8,8 @@ class Task(models.Model):
     is_completed = models.BooleanField(default=False)
     # ordem definida pela pessoa ao arrastar as tarefas (menor = mais acima)
     position = models.IntegerField(default=0)
-    due_date = models.DateField(blank=True, null=True)
+    # prazo da tarefa (data e hora); usado também para os lembretes/notificações
+    due_date = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
